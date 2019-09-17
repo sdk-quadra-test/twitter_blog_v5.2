@@ -1,0 +1,693 @@
+# 190906
+
+## リプライ機能
+コンテンツの中で @user01を見つける
+content全体に正規表現掛けると重い
+=> pagerしているから大丈夫
+view側でリンク設定の処理する
+
+contetntをhtml_safeしたあと
+
+gsubで@user01を<a href="#">@user01</a>に書き換える
+{!! !!} で表示
+
+
+
+
+## ajaxが動かない
+jquery slim版はajaxが動かない
+laravelテンプレートソースをslimから単なるmin版に書き換えた
+
+
+
+
+## データの状態がわからない(そのデータを何と呼ぶか分からない = ググれない)
+
+レコード選択状態？
+model？
+文字列？
+
+これはmodel？ updateできる状態？
+$prof_update = User::find($sess_user_id);
+$prof_update->profile = $request->profile;
+勝手に「DBのデータをいじれる状態」と呼んでる
+
+
+これはレコード選択状態？ なぜupdateできない？
+$user_id = DB::table('user')
+            ->select('id')
+            ->where('name', $name)
+            ->first();
+
+勝手に「DBの特定レコードを選択した状態」と呼んでる
+
+
+これで文字列指定？
+$user_id->id;
+
+勝手に「単なる文字列」と呼んでる
+
+ddしたら #584 とか出る、これをなんと呼ぶ？
+
+
+
+
+
+
+
+
+## メソッド呼び出し先でredirectできない
+redirectResponse objが返されるだけで、redirect自体は実行されない
+参考:
+https://qiita.com/u-dai/items/fcf74417d33e6985452f
+
+
+
+
+
+## noticeテーブル作成
+通知用にテーブルを作る
+
+id PK
+tweet_id 外部キー
+to_user_id 外部キー comment('通知対象者')
+is_read comment 既読判定
+
+発言者自体はtweet idから割り出す
+
+対象者が通知ページ開くと,ajaxでDB操作->is_readを1にする
+
+
+
+## フォローしていない相手にメッセージを送れるようにするか
+本家twitterでは送れるので、送れるようにした
+
+
+
+## 一気にsaveしたい
+if (count($not_read) >= 1) {
+            foreach ($not_read as $k => $v) {
+                $v->is_read = $is_read;
+
+                eval(\Psy\sh());
+            }
+            $not_read->save();
+
+        }
+
+この場合、foreachの中で$v->saveするのが正解だが、foreachが回ったあと、一気にsaveする方法はないか？
+
+
+
+
+
+
+
+## gitignore
+gitignoreにpush禁止のファイルを記述しても効かない問題.
+キャッシュを消さないと反映されないとの事
+$ git rm -r --cached . //ファイル全体キャッシュ削除
+キャッシュ削除後,期待した挙動になった.
+
+
+## まずいファイルをupした
+git にawsのアクセスキー入ったファイルをアップしてしまった。。
+仕方ないので過去に戻して強制的にpush
+↓
+http://www-creators.com/archives/2020#push
+
+
+
+
+
+
+
+
+## S3 componser install 
+$ composer require league/flysystem-aws-s3-v3:~1.0
+
+
+
+## IAM設定周り
+IAMユーザーにpublicでupできる権限を与える
+参考: https://kkznch.hatenablog.com/entry/2018/03/06/154554
+ "Resource": "arn:aws:s3:::mybucket/myprefix/*"
+ の部分は,jsonファイルを直編集.
+
+## arn
+arn:aws:s3:::twitter-progra-master
+
+
+
+# icon確認画面が非常に難しい
+・iconアップ確認画面用に、専用にフォルダ作成
+・publicにどんどん一時ファイルが溜まっていくが,問題ないか
+
+・確認画面から「戻る」した場合に、iconの画像の選択状態が消えてしまうが、消えない方法があるのか
+
+
+
+
+
+
+
+
+## icon upした時にキャッシュが読まれて過去のiconが表示される時がある(S3が混んでいる時が怪しい)
+S3側のキャッシュを消す必要(laravel側のキャッシュを消しても起こるのでS3側に問題)
+lambda,というのを使うようだが、今回はまだやってない
+参考: https://hack-le.com/s3-cloudfront-lambda/
+
+
+
+
+## コントローラー分割
+1000行近くなったので分ける
+とりあえず,headerと同じように
+login
+tweetする
+通知
+タイムライン
+プロフィール
+の５つに。ログインとプロフィールにvalidateの記述がかぶるが、とりあえずOK
+
+
+
+
+## クラス共通化
+参考: https://qol-kk.com/wp2/blog/2019/04/01/post-1183/
+
+ダブるメソッド
+tweet
+get_all_user_name
+
+timeline
+get_all_user_name
+get_user_timeline
+get_following_user_id
+
+profile
+get_user_timeline
+get_following_user_id
+
+notice
+#
+login
+#
+
+
+まず、別メソッドに切り出す
+
+
+# メソッドをpublicとprivateに分ける
+
+
+
+
+
+
+
+190911
+・staticとはどういうことなのかがよく分からない
+=> 呼び出す者により結果が変わるのが動的、変わらないのが静的.どういうことか、、
+=> なんとなく分かるような、、
+http://fresh-engineer.hatenablog.com/entry/2018/08/23/031829
+
+例：
+class CommonTwitter {
+	public $human;
+	public function __construct($h){
+		$this->human = $h;
+	}
+	public static function by($a, $b)
+    {
+        if ($this->human == '田中') {
+            return $a + $b;
+        }
+        return $a * $b;
+    }
+}
+
+$by = CommonTwitter('田中')::by(2,2);
+という様に、staticは引数を入れてインスタンス化できない。
+
+もしclassにconst（初期挙動,実行者）がないなら
+$by = CommonTwitter::by(2,2);
+でby関数を呼べる
+
+さしあたって、constで引数指定があるかどうかでstatic使うかどうか決める。(constで引数指定あるならstaticしない,できない)
+
+
+
+
+
+
+# 190913
+## 画像upload時に加工してupする
+参考 https://qiita.com/ryuseikurata/items/3ba472e933f2f5bfe043
+http://image.intervention.io/
+$ composer require intervention/image
+laravel5.2では動かなかった。。
+
+画像を加工するのではなく、最初から画像アップのときには
+validateで正方形の画像しかアップできないようにする方向.
+
+
+## ajax内のjsonに変数を受け渡す方法が分からず,一部冗長に書いてます。
+変数渡せたら短く掛けると思うんですが、、
+
+
+
+
+#190914
+新規ユーザー登録をした直後にログインすると、誰もフォローしてない && 自分もツイートしていないので、
+タイムラインが空欄になる為,デフォルトでuser1をフォローするようにした
+
+
+
+
+
+
+
+
+
+
+
+
+# 修正
+全ユーザーの表示20件
+
+
+未ログイン
+timeline
+x ログインしない状態 > タイムライン > view profile できない
+
+
+ログイン状態
+http://localhost:8000/profile/edit
+user id 16
+x プロフィール編集時 デフォルトでアイコンが出ない
+=> 多分 anonymousフォルダだから
+
+
+
+
+remote で実行する内容を確認しておく
+DB作成
+$ create database twitter
+migration実行？？
+$ php artisan migrate
+
+remote 上のmysqlにつなぐ設定
+.envのDB情報をremote用に書き換え
+user : root
+pass : rootpass
+
+
+#########
+remote PC上で動かす為に、remote PCの設定を少し触りました。
+
+・PHPのパスをつなぐ
+https://weblabo.oscasierra.net/php-56-windows-install/
+
+・php.iniファイル一部修正
+Call to undefined function openssl_encrypt() が出たので
+https://codeday.me/jp/qa/20190309/385741.html
+を参考に, php.iniファイルをいじりました。
+
+Unable to guess the mime type as no guessers are available (Did you enable the php_fileinfo extension?)
+が出たので
+https://dennie.tokyo/web/2016/08/23/cannotgetmimetype/
+を参考に, php.iniファイルをいじりました。
+#########
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 残タスク 190911 21:00時点
+・動詞でメソッド名始めているか
+・constでsess_user_id設定
+・tweetcontrollerにあるnotice関連をnoticecontrollerに移して,tweetcontrollerから呼び出す
+・follow unfollowの ajax挙動がおかしいので修正する
+
+
+
+
+
+
+
+
+
+# 190905
+
+## tweetのpop up
+cross origin対策してtestする必要(jq remote 使うので)
+$ open /Applications/Google\ Chrome.app/ --args --disable-web-security --user-data-dir
+でchrome起動してアクセス
+
+### pop upを別ファイルに書きたい
+<button type="button" class="btn btn-default" data-remote="/login.html" data-toggle="modal" data-target="#remoteModal">data-remote 属性</button>
+みたいに、remoteにファイルへのパスを指定してやろうとしているがうまく行かない
+できそうなのがあったが、時間があるときにやる↓
+https://codeday.me/jp/qa/20190624/1094662.html
+
+### jsをheadに移す
+laravelの初期状態ではテンプレートの/body直前に設置されているが、body内でjqueryを使いたかったのでjsをheadに移動。ページ読み込みはそんなに変わらないのでは。
+できるだけjquery使いたい。js長くなる。。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+この２つ (profile controller) 似ているので対処する必要
+名前変えるか一緒にするか
+
+public function get_follow_count($sess_user_id, $id)
+is_following_user
+
+
+public function count_follow($sess_user_id, $following_user_id)
+count_following_user_id
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 流したSQL(+α) log
+
+## php version 切り替え
+$ phpbrew switch 5.6.19
+
+## composerでlaravel(v5.2)をinstall
+$ composer create-project --prefer-dist laravel/laravel twitter_blog "5.2.*"
+
+## DB作成
+$ create database twitter
+
+## table作成
+$ php artisan make:migration create_user_table --create=user
+$ php artisan make:migration create_follow_table --create=follow
+$ php artisan make:migration create_tweet_table --create=tweet
+$ php artisan make:migration create_notice_table --create=notice
+
+## migrate
+$ php artisan migrate 
+
+## phpinfo()でpdo driverがno value. ドライバー入れ直した(必要ないならskip)
+$ phpbrew install 5.6.19 +default +mysql
+
+## modelの作成
+$ php artisan make:model User  # or Follow or Tweet or Notice
+
+## modelのテーブル名指定
+このままだとlaravelがテーブル名を勝手に複数形にしてsql叩いてしまう.
+それぞれのmodelに以下を追加
+protected $table = 'user';  # or follow or tweet 
+
+## DB定義変更の時の為,composer doctrine/dbalをinstall(必要ない場合skip)
+$ composer require doctrine/dbal
+
+### DB定義を変更(必要ないならskip)
+先にmigrationファイル作成
+$ php artisan make:migration change_tweet_table_1909022042 --create=tweet
+その後,ファイル内を修正
+外部キーのカラムを変更するには以下を参照
+
+	//外部キー制約を一旦無効化
+    Schema::disableForeignKeyConstraints();
+
+    //処理
+    DB::statement('ALTER TABLE `tweet` MODIFY `user_id` INT UNSIGNED NOT NULL;');
+
+	//外部キー制約を有効化
+	Schema::enableForeignKeyConstraints();
+    
+
+
+
+$ php artisan migrate
+
+
+## テストデータ作成
+$ php artisan make:seeder UserTableSeeder # or FollowTableSeeder or TweetTableSeeder
+### seeder実行
+$ php artisan db:seed --class=UserTableSeeder # or FollowTableSeeder or TweetTableSeeder
+
+### seedデータ流すに伴い,mysql 自動採番のリセット(必要ない場合skip)
+mysql> alter talbe user auto_increment = 1;
+
+### seedデータでDBを再構築する場合(必要ない場合skip)
+$ php artisan migrate:refresh --seed
+
+### 不要migrationファイルは消してはならない
+refresh時におかしくなる(migrationファイル作成のlogは残っているので).不要migrationファイルは,中を空などにして残しておく
+
+### migrationファイルのdownメソッド発動条件(必要ない場合skip)
+rollbackで発動する
+1つ戻す
+$ php artisan migrate:rollback
+全ファイルで1つ戻す
+$ php artisan migrate:reset
+	全テーブルを削除して,migrate:resetして,migrateすればmigrate:fresh的になる
+
+
+## route設定
+Route::get('/login', 'TweetController@login');
+
+## controller作成
+$ php artisan make:controller TweetController
+$ php artisan make:controller LoginController
+$ php artisan make:controller TimelineController
+$ php artisan make:controller NoticeController
+$ php artisan make:controller ProfileController
+$ php artisan make:controller UserController
+
+
+## リンク,フォームを関数で書きたい為,laravel collectiveを入れる
+$ composer require "laravelcollective/html":"5.5.*"
+
+## 古いlaravelは自動でlaravel collectiveが動いてくれないので、以下を修正
+config > app.phpを修正
+
+'providers'に以下を追加
+Collective\Html\HtmlServiceProvider::class  // 追加
+
+'aliases'に以下を追加
+'Form' => Collective\Html\FormFacade::class,  // 追加
+'Html' => Collective\Html\HtmlFacade::class,  // 追加
+
+## routeにname付ける
+app > Http > routes.phpの各routeににname追加
+
+## composerをリセット(事あるごとに使う.クラス(マップ)を対応付けてくれる)
+$ composer dump-autoload
+
+## validateファイル作成
+$ php artisan make:request ValidateRequest
+
+## debug用にデバッグバーをlaravelにinstall
+$ composer require barryvdh/laravel-debugbar
+
+### REPLのdebuggerもinstall
+https://qiita.com/youkyll/items/92e144bec0861b07bc56 参照
+https://psysh.org/ 参照
+debugをしたい場所(controllerなど)に,
+eval(\Psy\sh());
+と記述.ブラウザで見ると,ターミナルでtinker起動
+$ whereami
+    で現在地表示
+    終了時はexitしてからctrl + Cが綺麗
+
+## validation textの日本語化
+laravel5.2では日本語validateが無いので、enファイルの中を日本語に書き換えた
+
+## debug時にportが専有されたまま開放されない場合
+$ lsof -i -P | grep 8000
+PID 17531 の場合(9は強制終了の意)
+$ kill -9 17531
+
+## dd() or dump()でdebug
+途中で止めたくないなら,dumpで.
+
+
+
+
+
+
+
+
+
+# 190902
+した事
+・programasterのremote環境のphpがver5.6.19なので、
+自分のPCも合わせる(phpbrew)
+
+・phpのversionを5.6.19にしたらlaravel動かなくなった.laravelのversionを5.2以下に落とす必要.既存laravelとは別で,別versionのlaravel作成
+
+・laravelでmigrationファイルをmigrateしようとすると,pdo exceptionエラーが出る。
+phpinfo()すると、pdo driverがno valueに。なのでDBname,passの問題ではない。
+
+phpのバージョンを切り替える為にphpbrewを使っているが、これが問題。
+
+$ phpbrew install 5.6.19 +default
+で5.6.19をinstallしたが、この状態からpdo driverをセットを試みたが、失敗。
+
+結局、phpbrew時にmysqlオプションを設定し、pdo driverを最初から設定してくれるようにすることで解決。(= phpbrewで再インストール)
+↓
+$ phpbrew install 5.6.19 +default +mysql
+
+数時間格闘。
+
+・route設定
+controllerは1枚に書く.複雑化したら分ける.
+
+・laravelcollectiveのlink_to_routeが動かず.routes.phpにname追加することで解決
+
+・DB定義を変更する為,migrationファイル作成
+null許容を,not nullに変更する為。
+
+laravelのバージョンが古いので(php 5.6.19に合わせたから),
+$table->integer('user_id')->unsigned()->nullable(false);
+といった書き方ができない。
+
+DB::statement('ALTER TABLE `tweet` MODIFY `user_id` INT UNSIGNED NOT NULL;');
+という風に、直にsqlを書く事で解決。
+
+しかしカラムが外部キーを貼っているので更にエラー。
+//外部キー制約を一旦無効化
+    Schema::disableForeignKeyConstraints();
+
+    したあと、
+
+//外部キー制約を有効化
+    Schema::enableForeignKeyConstraints();
+
+する事で解決。DB定義を変更できた。
+
+・既存テーブルデータをすべて消し,テストデータに入れ替えたい.
+migrateすると
+There is no column with name 'user_id' on table 'user'.
+と出る.
+userテーブルには必要ないはずのカラムが必要だというエラー.
+以下を入れる必要.
+$ composer require doctrine/dbal
+
+## laravel用のpagerを設置した所,bootstrapのversionが古く,エラー
+"bootstrap": "^4.0.0-alpha.2"
+をpackage.jsonに書き
+$ npm install を実行
+
+jqueryが足りないと言われたので
+"jquery": "^3.1.0"
+"popper.js": "^1.14.1"
+でも同様に実行
+
+## メソッド分割
+controllerをわかりやすく,できるだけメソッドを分けて書いていたが,viewが表示されない所でかなりハマる.
+飛び先でreturn viewしていればいいと思っていたが,そうではない様子.
+check_valというメソッドを読み込んだら,check_val「内」でviewを設定しなければならない.
+
+
+
+
+疑問:
+・中間テーブル3つ以上はできるのか(1回のjoinで目的のデータは取れるのか?)
+followしているuserのiconとtweet内容を1回で取れるのか?(取れないと見なして次に進む.見たこと無いので(mikoshivaは大体customer_idを軸にしていた))(肥大化した時の為に,大体2クッションでつなぐのではという予想)
+
+
+・対話型(REPL)でデータをsaveした場合,mysql側で設定しているvalidateが効かない.
+	例えばpasswordというカラムにmysql側でnot null制約を入れているのに,REPLでpasswordに何も入れなくてもsaveできてしまう。
+	例:
+		$ php artisan tinker
+		>>> $user = new App\User
+		>>> $user->save()
+		自動採番のIDだけ入った状態で、新しいレコードができてしまう。
+		passwordには自動で「空文字」(nullではなく)が入っている。原因分からず。
+		追記:
+			>>> $user->password = null
+			>>> $user->save()
+			という風にわざわざnullを入れると,ちゃんとエラー出たので,mysql側の制約は効いている.多分laravel側がnot null制限かけていて未指定の場合,空文字に変換している.
+			仮結論: REPLでDB操作すると,validateが一部無視される
+
+
+・table内容を消去して,seedファイルを読み込みたいが,
+$ php artisan migrate:refresh --seed
+をすると,logを見ているのか,これまでの作成したデータをすべて見に行き,相違があればエラーを出す様子.これまで作っては消してきたファイルをすべて用意するのは大変なので,別の方法を探す
+=> 素直にtable内を手動で消去してseedを流し直す事にした.
+
+備考: laravel 5.2には 
+$ php artisan migrate:fresh
+できない(freshできない.refreshはある)
+fresh:全テーブル削除後に全migrationファイル実行
+=> 自力で全テーブル消す必要
+
+
+備考
+・tableは複数のレコードを保持するので、table名を複数形にするという議論があるが、tableが複数レコードを持つことは自明なので、単数形で作った。(1行のレコードのDBはほとんどない)
+
+・controller名は単数の方がしっくりくるので単数で作った。
+
+・既存のファイルは消してはならない.おかしくなる.(usersテーブルのmigrationファイルなど)
+
+
+
+

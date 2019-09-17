@@ -1,0 +1,247 @@
+.navbar-brand {
+    font-size: 18px;
+
+}
+
+.nav-item {
+    font-size: 14px;
+}
+
+.nav-tabs > .nav-item:hover {
+    background-color: #EEEEEE;
+}
+
+
+.nav > li {
+    position: relative;
+    display: block;
+}
+
+.navbar-nav > li > a {
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+    color: rgba(255, 255, 255, .7);
+    font-size: 15px;
+}
+
+.navbar-nav > li > a:hover {
+    text-decoration: none;
+    color: #FFFFFF;
+}
+
+.navbar-inverse .navbar-nav > li > a {
+    color: #9d9d9d;
+}
+
+
+.navbar-nav > li > .dropdown-menu {
+    margin-top: 7px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+
+@media (max-width: 575px) {
+    .dropdown-menu {
+        background-color: #343A40;
+    }
+
+    .dropdown-menu > li > a {
+        color: rgba(255, 255, 255, .7);
+    }
+
+    .dropdown-menu > li > a:hover {
+        text-decoration: none;
+        color: #FFFFFF;
+    }
+}
+
+@media (min-width: 576px) {
+    .dropdown-menu {
+        background-color: #FFFFFF;
+    }
+
+    .dropdown-menu > li > a {
+        color: #333333;
+    }
+
+    .dropdown-menu > li > a:hover {
+        text-decoration: none;
+        background-color: #EEEEEE;
+    }
+}
+
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: -70px;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0, 0, 0, .15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+}
+
+.dropdown-menu > li > a {
+    display: block;
+    padding: 3px 20px;
+    clear: both;
+    font-weight: 400;
+    line-height: 1.42857143;
+    /*color: #333;*/
+    white-space: nowrap;
+}
+
+
+.dropdown-menu .divider {
+    height: 1px;
+    margin: 9px 0;
+    overflow: hidden;
+    background-color: #e5e5e5;
+}
+
+@media (min-width: 768px) {
+    .navbar-right .dropdown-menu {
+        right: 0;
+        left: auto;
+    }
+}
+
+
+#preview {
+    width: 100%;
+}
+
+.max-width484 {
+    max-width: 484px;
+}
+
+.min-width375 {
+    min-width: 375px;
+}
+
+
+.media-object {
+    display: block;
+}
+
+.img-rounded {
+    border-radius: 6px;
+}
+
+.mini-profile {
+    width: 70px;
+}
+
+.media-list {
+    padding-left: 0;
+    list-style: none;
+}
+
+.media-left, .media-right {
+    display: table-cell;
+    vertical-align: top;
+}
+
+.media-left, .media > .pull-left {
+    padding-right: 10px;
+}
+
+.media a:hover {
+    text-decoration: none;
+}
+
+.text-muted {
+    color: #777;
+    font-size: 14px;
+}
+
+
+.card-responsive {
+    width: 100%;
+    height: auto;
+}
+
+
+.btn-default {
+    color: #333;
+    background-color: #fff;
+    border-color: #ccc;
+}
+
+.btn-default:hover {
+    background-color: #EEEEEE;
+}
+
+
+.pagination {
+    display: inline-block;
+    padding-left: 0;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+
+.pagination > li {
+    display: inline;
+}
+
+.pagination > li:last-child > a, .pagination > li:last-child > span {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+pagination > .active > a, .pagination > .active > a:focus, .pagination > .active > a:hover, .pagination > .active > span, .pagination > .active > span:focus, .pagination > .active > span:hover {
+    z-index: 3;
+    color: #fff;
+    cursor: default;
+    background-color: #337ab7;
+    border-color: #337ab7;
+}
+
+.pagination > li > a, .pagination > li > span {
+    position: relative;
+    float: left;
+    padding: 6px 12px;
+    margin-left: -1px;
+    line-height: 1.42857143;
+    color: #337ab7;
+    text-decoration: none;
+    background-color: #fff;
+    border: 1px solid #ddd;
+}
+
+.pagination > li > a:hover {
+    background-color: #EEEEEE;
+}
+
+.text-break {
+    word-break: break-all;
+}
+
+/*follow, unfollow*/
+#follow_user, #unfollow_user {
+    display: none;
+}
+
+.nav-link{
+    font-size: 15px;
+}
+footer {
+    margin-top: 3rem;
+    border-top: 1px solid #DDDDDD;
+    padding: 8px 16px;
+}
