@@ -2,7 +2,6 @@
 
 @section('content')
 
-
     <div class="row">
         <aside class="col-sm-4">
             <div class="card mb-3">
@@ -13,13 +12,12 @@
                     <img class="rounded card-responsive" src="{{$profile->icon_url}}" alt="">
                 </div>
             </div>
-            <?php /*$a = 1;
-            dd($a);*/?>
             {{-- 自分にはfollowボタン出さない --}}
             @if(Session::has('user_id'))
                 @if($profile->id !== session('user_id'))
                     <button id='follow_user' class="btn btn-primary btn-block mt-0">+ follow</button>
                     <button id='unfollow_user' class="btn btn-danger btn-block mt-0">- unfollow</button>
+                    <div id="result_msg"></div>
                 @endif
             @endif
         </aside>
@@ -40,7 +38,6 @@
                                         class="nav-link {{ Request::is('profile/*/profile') ? 'active' : '' }}">Profile</a>
                 </li>
             </ul>
-
 
             @if(Request::is('profile/*/timeline'))
                 @include('twitter.concern.timeline',['profile' => $profile, 'timeline' => $timeline])
@@ -76,12 +73,15 @@
                 })
                 // Ajaxリクエストが成功した場合
                     .done(function (data) {
-                        console.log("a_success");
+
                         $('#follow_user').toggle();
                         $('#unfollow_user').toggle();
+                        $('#result_msg').addClass('alert alert-success mt-3 pb-1');
+                        $('#result_msg').html('<h6>{{$profile->disp_name}}をフォローしました</h6>');
                     })
                     .fail(function (data) {
-                        alert(data.responseJSON);
+                        $('#result_msg').addClass('alert alert-danger mt-3 pb-1');
+                        $('#result_msg').html('<h6>{{$profile->disp_name}}のフォローに失敗しました.管理者に問い合わせて下さい</h6>');
                     });
             });
 
@@ -99,9 +99,12 @@
                         console.log("b_success");
                         $('#follow_user').toggle();
                         $('#unfollow_user').toggle();
+                        $('#result_msg').addClass('alert alert-success mt-3 pb-1');
+                        $('#result_msg').html('<h6>{{$profile->disp_name}}のフォローを解除しました</h6>');
                     })
                     .fail(function (data) {
-                        alert(data.responseJSON);
+                        $('#result_msg').addClass('alert alert-danger mt-3 pb-1');
+                        $('#result_msg').html('<h6>{{$profile->disp_name}}のフォロー解除に失敗しました.管理者に問い合わせて下さい</h6>');
                     });
             });
         });

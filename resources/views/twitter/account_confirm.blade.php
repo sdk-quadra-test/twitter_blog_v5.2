@@ -1,14 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
-    <!-- ここにページ毎のコンテンツを書く -->
-    <style type="text/css">
-        .user_icon {
-            width: 80px;
-        }
-
-    </style>
     <h5 class="mb-3">アカウント確認画面</h5>
 
     <div class="row ml-0 mr-0">
@@ -53,7 +45,6 @@
 
             {!! Form::submit('戻る', ['class' => 'btn btn-default', 'name' => 'back', 'role' => 'button']) !!}
             {!! Form::submit('変更する', ['class' => 'btn btn-primary', 'role' => 'button']) !!}
-
             {!! Form::close() !!}
         </div>
     </div>

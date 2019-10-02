@@ -11,9 +11,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('user')->insert([
-            'name' => 'user01',
-            'password' => bcrypt('secret'),
-        ]);
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        DB::table('notice')->truncate();
+
+        $this->call(UserTableSeeder::class);
+        $this->call(FollowTableSeeder::class);
+        $this->call(TweetTableSeeder::class);
     }
 }

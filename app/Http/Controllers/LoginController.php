@@ -2,22 +2,15 @@
 
 namespace App\Http\Controllers;
 
-
 use Illuminate\Http\Request;
-use App\Http\Requests;
+//use App\Http\Controllers\UserController;
 use DB;
 use App\User;
 use App\Follow;
 use App\Tweet;
-//# 自力validate用
-use Validator;
 
 class LoginController extends Controller
 {
-
-    ##########################################
-    # view
-    ##########################################
     public function login()
     {
         //    loginしていたらredirect
@@ -31,7 +24,8 @@ class LoginController extends Controller
         ]);
     }
 
-    public function signup(){
+    public function signup()
+    {
         $user = new User;
         return view('twitter.signup', [
             'user' => $user
@@ -48,20 +42,7 @@ class LoginController extends Controller
 
     public function validate_login(Request $request)
     {
-        $rules = [
-            'name' => 'required|max:16',
-            'password' => 'required|max:50',
-        ];
-
-        $messages = [
-            'name.required' => 'ユーザー名を入力してください',
-            'name.max' => 'ユーザー名は :max 文字以内で入力して下さい',
-            'password.required' => 'パスワードを入力してください',
-            'password.max' => 'パスワードは :max 文字以内で入力して下さい',
-        ];
-
-        $validator = Validator::make($request->all(), $rules, $messages);
-
+        $validator = User::validate_login($request);
         # viewの兼ね合いで切り出しできない
         if ($validator->fails()) {
             return redirect()->back()
@@ -80,37 +61,21 @@ class LoginController extends Controller
         $validator = $this->validate_signup($request);
 
         if ($validator) {
-//            $a = 1;
-//            dd($a);
             $back_with_error = $this->back_with_error($validator);
             return $back_with_error;
         }
 
-//        if ($validator->fails()) {
-//            return redirect()->back()
-//                ->withErrors($validator)
-//                ->withInput();
-//        }
-//        if ($validator->passes()) {
-//            $this->store_user($request);
-//            return redirect('/login');
-//        }
-
         $user = new User;
-
         return view('twitter.signup_confirm')->with([
             'user' => $user,
             'request' => $request
         ]);
     }
 
-
     public function store_signup(Request $request)
     {
-
         $back = $request->back;
         $input = $request->all();
-
         if ($back == '戻る') {
             return redirect('/signup')->withInput($input);
         }
@@ -121,47 +86,32 @@ class LoginController extends Controller
         $pass = $post['password'];
 
         $aws_url = env('AWS_URL');
-        $rand_num = rand(1,30);
+        $rand_num = rand(1, 30);
+        $default_icon_url = $aws_url . '/anonymous/anonymous_' . $rand_num . '.png';
 
-        $default_icon_url = $aws_url.'/anonymous/anonymous_'.$rand_num.'.png';
-
-        $user = new User;
-        $user->name = $name;
-        $user->disp_name = $disp_name;
-        $user->password = $pass;
-        $user->icon_url = $default_icon_url;
-        $user->save();
-
-        # 新規登録者はdefaultでuser1をfollow
-        $follow = new Follow;
-        $follow->user_id = $user->id;
-        $follow->following_user_id = 1;
-        $follow->save();
-
-        # 新規登録者はdefaultで参加をtweet
-        $tweet = new Tweet;
-        $tweet->user_id = $user->id;
-        $tweet->content = $user->name.' (@'. $user->name .')'.'がツイートプログラムに参加しました';
-        $tweet->save();
-
+        $this->store_signup_with_default($name, $disp_name, $pass, $default_icon_url);
 
         $request->session()->flash('success_signup', '登録成功！ 入力した内容でログインして下さい');
-
         return redirect('/login');
     }
 
 
-    ##########################################
-    # private
-    ##########################################
+##########################################
+# private
+##########################################
     private function auth_user(Request $request)
     {
         $post = $request->all();
         $name = $post['name'];
         $pass = $post['password'];
 
-        $exist_user = $this->get_exist_user($name, $pass);
-        $user = $this->get_user_by_name($name);
+        $user = UserController::get_user_by_name($name);
+
+        $user_hashed_pass = "";
+        if (count($user) > 0) {
+            $user_hashed_pass = $user->password;
+        }
+        $exist_user = $this->verify_pass($name, $pass, $user_hashed_pass);
 
         if (count($exist_user) > 0) {
             $request->session()->put('user_id', $user->id);
@@ -174,36 +124,12 @@ class LoginController extends Controller
 
     private function validate_signup(Request $request)
     {
-        $rules = [
-//            'name' => 'required|max:16|unique:user,name,' . $sess_user_id,
-            'name' => 'required|max:16|unique:user',
-            'disp_name' => 'required|max:20',
-            'password' => 'required|max:50',
-            'confirm_password' => 'required|max:50|same:password',
-        ];
-
-        $messages = [
-            'name.required' => 'ユーザー名を入力してください',
-            'name.max' => 'ユーザー名は :max 文字以内で入力して下さい',
-            'disp_name.required' => '表示名を入力してください',
-            'disp_name.max' => '表示名は :max 文字以内で入力して下さい',
-            'name.unique' => 'そのユーザー名は既に登録されています。別のユーザー名で登録して下さい',
-            'password.required' => 'パスワードを入力してください',
-            'password.max' => 'パスワードは :max 文字以内で入力して下さい',
-            'confirm_password.required' => 'パスワード確認を入力してください',
-            'confirm_password.max' => 'パスワード確認は :max 文字以内で入力して下さい',
-            'confirm_password.same' => 'パスワード確認が一致しません',
-        ];
-
-        $validator = Validator::make($request->all(), $rules, $messages);
+        $validator = User::validate_signup($request);
 
         if ($validator->fails()) {
             return $validator;
         }
-//        if ($validator->passes()) {
-//        }
         return null;
-
     }
 
     private function back_with_error($validator)
@@ -213,24 +139,22 @@ class LoginController extends Controller
             ->withInput();
     }
 
-    private function get_exist_user($name, $pass)
+    private function verify_pass($name, $pass, $user_hashed_pass)
     {
-        $exist_user = DB::table('user')
-            ->where('name', $name)
-            ->where('password', $pass)
-            ->where('is_deleted', 0)
-            ->first();
-        return $exist_user;
+        $pass_verify = password_verify($pass, $user_hashed_pass);
+
+        if ($pass_verify) {
+            $exist_user = User::get_user_by_name($name);
+            return $exist_user;
+        }
+        return null;
     }
 
-    private function get_user_by_name($name)
+    private function store_signup_with_default($name, $disp_name, $pass, $default_icon_url)
     {
-        $user = DB::table('user')
-            ->select('id','name','disp_name')
-            ->where('name', $name)
-            ->where('is_deleted', 0)
-            ->first();
-        return $user;
+        $user = new User;
+        $user->store_signup_with_default($name, $disp_name, $pass, $default_icon_url);
+
     }
 
 }

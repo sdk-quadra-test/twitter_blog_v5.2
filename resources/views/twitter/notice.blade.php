@@ -4,7 +4,7 @@
 
     <script>
         $(function () {
-            console.log("aaa");
+            console.log("bbb");
             $.ajax({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

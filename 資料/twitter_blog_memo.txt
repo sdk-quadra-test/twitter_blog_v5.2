@@ -1,3 +1,6 @@
+# 190930
+test 書き込み2
+
 # 190906
 
 ## リプライ機能
@@ -454,6 +457,7 @@ $ php artisan migrate
 
 ## phpinfo()でpdo driverがno value. ドライバー入れ直した(必要ないならskip)
 $ phpbrew install 5.6.19 +default +mysql
+
 
 ## modelの作成
 $ php artisan make:model User  # or Follow or Tweet or Notice

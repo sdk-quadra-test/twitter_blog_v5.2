@@ -2,15 +2,7 @@
 
 @section('content')
 
-    <style type="text/css">
-        .user_icon {
-            width: 80px;
-        }
-
-    </style>
-
     <h5 class="mb-3">アカウント編集</h5>
-
 
     @if (count($errors) > 0)
         <div class="alert alert-danger">
@@ -73,9 +65,6 @@
     </div>
 
 
-
-
-
     <script>
         $("#disp-pass").change(function () {
             console.log("here");
@@ -88,11 +77,6 @@
             }
         })
     </script>
-
-
-
-
-
 
 @endsection
 

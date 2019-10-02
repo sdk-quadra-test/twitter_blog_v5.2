@@ -2,19 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Concern\CommonTwitter;
+//use App\Http\Controllers\UserController;
+use App\User;
 use App\Notice;
 use Illuminate\Http\Request;
 use DB;
-use App\Http\Requests;
+use Mockery\Matcher\Not;
 
 class NoticeController extends Controller
 {
-
-    ##########################################
-    # view
-    ##########################################
-
     public function notice()
     {
         if (!session()->has('user_id')) {
@@ -25,11 +21,8 @@ class NoticeController extends Controller
         $notice = $this->get_notice($sess_user_id);
 
         //　user名にlink設置
-        $arr_all_user_name = new CommonTwitter();
-        $arr_all_user_name = $arr_all_user_name->get_all_user_name();
-
-        $arr_all_user_disp_name = new CommonTwitter();
-        $arr_all_user_disp_name = $arr_all_user_disp_name->get_all_user_disp_name();
+        $arr_all_user_name = UserController::get_all_user_name();
+        $arr_all_user_disp_name = UserController::get_all_user_disp_name();
 
         foreach ($notice as $k => $v) {
             $v->content = htmlspecialchars($v->content);
@@ -40,7 +33,6 @@ class NoticeController extends Controller
                 $v->disp_name = str_replace($disp_name, "<a href='/profile/{$id}/timeline'>{$disp_name}</a>", $v->disp_name);
             }
         }
-
         return view('twitter.notice', [
             'notice' => $notice
         ]);
@@ -53,7 +45,7 @@ class NoticeController extends Controller
         }
 
         $sess_user_id = session('user_id');
-        $count_notice = $this->get_is_read($sess_user_id);
+        $count_notice = $this->count_is_read($sess_user_id);
         return $count_notice;
     }
 
@@ -67,47 +59,58 @@ class NoticeController extends Controller
         $request = $request->all();
         $is_read = $request['is_read'];
 
-        $not_read = Notice::where('to_user_id', $sess_user_id)
-            ->where('is_read', 0)
-            ->where('is_deleted', 0)
-            ->get();
+        $not_read_yet = Notice::not_read_yet($sess_user_id);
 
-        if (count($not_read) >= 1) {
-            foreach ($not_read as $k => $v) {
-                $v->is_read = $is_read;
-                $v->save();
+        if (count($not_read_yet) >= 1) {
+            Notice::update_to_read($not_read_yet, $is_read);
+        }
+        return null;
+    }
+
+    public function store_notice($tweet)
+    {
+        $sess_user_id = session('user_id');
+        $tweet_id = $tweet->id;
+        $content = $tweet->content;
+
+        $all_user_name = User::get_all_user_name();
+
+        $arr_user_id = $this->build_user_id_if_exist_user_name($sess_user_id, $all_user_name, $content);
+
+        if (count($arr_user_id) > 0) {
+            $store_notice = new Notice();
+            $store_notice->store_notice($arr_user_id, $tweet_id);
+        }
+        return null;
+    }
+
+    public function build_user_id_if_exist_user_name($sess_user_id, $all_user_name, $content)
+    {
+        $arr_user_id = [];
+        foreach ($all_user_name as $k => $v) {
+            $name_match = preg_match_all('/@' . $v->name . '/', $content);
+
+            if ($name_match && $v->id !== $sess_user_id) {// 自分から自分へのtweetは除外
+                array_push($arr_user_id, $v->id);
             }
         }
+        return $arr_user_id;
     }
 
 
-    ##########################################
-    # private
-    ##########################################
+##########################################
+# private
+##########################################
 
-    private function get_notice($sess_user_id){
-        $notice = DB::table('notice')
-            ->join('tweet', 'notice.tweet_id', '=', 'tweet.id')
-            ->join('user', 'tweet.user_id', '=', 'user.id')
-            ->select('tweet.user_id', 'user.name', 'user.disp_name', 'user.icon_url', 'tweet.content', 'notice.is_read', 'tweet.created_at as tweet_created_at')
-            ->where('notice.to_user_id', $sess_user_id)
-            ->where('tweet.user_id', '!=', $sess_user_id)
-            ->where('notice.is_deleted', 0)
-            ->where('tweet.is_deleted', 0)
-            ->where('user.is_deleted', 0)
-            ->orderBy('tweet.created_at', 'desc')
-            ->paginate(20);
+    private function get_notice($sess_user_id)
+    {
+        $notice = Notice::get_notice($sess_user_id);
         return $notice;
     }
 
-    private function get_is_read($sess_user_id){
-        $count_notice = DB::table('notice')
-            ->where('to_user_id', $sess_user_id)
-            ->where('is_read', 0)
-            ->where('is_deleted', 0)
-            ->count();
+    private function count_is_read($sess_user_id)
+    {
+        $count_notice = Notice::count_is_read($sess_user_id);
         return $count_notice;
     }
-
-
 }
