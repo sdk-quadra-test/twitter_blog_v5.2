@@ -18,7 +18,7 @@ class Tweet extends Model
     {
         return self::query()
             ->join('user', 'tweet.user_id', '=', 'user.id')
-            ->select('tweet.user_id', 'icon_url', 'disp_name', 'name', 'content', 'tweet.created_at as tweet_created_at')
+            ->select('user.id', 'tweet.user_id', 'icon_url', 'disp_name', 'name', 'content', 'tweet.created_at as tweet_created_at')
             ->where('tweet.is_deleted', 0)
             ->where('user.is_deleted', 0)
             ->orderBy('tweet.created_at', 'desc')
