@@ -163,7 +163,7 @@ class ProfileEditController extends Controller
     {
         if ($_FILES['icon_url']['size'] > 0) {
             /*tmp imgをmoveして一時フォルダに保存*/
-            $icon_name = 'icon_' . $sess_user_id . '.' . $request->file('icon_url')->guessExtension(); // TMPファイル名
+            $icon_name = 'icon_' . $sess_user_id . '.' . $request->file('icon_url')->guessExtension(); // tmpファイル名
             $request->file('icon_url')->move(public_path() . "/img/tmp/", $icon_name);
             $tmp_icon_url = "/img/tmp/" . $icon_name;
         }

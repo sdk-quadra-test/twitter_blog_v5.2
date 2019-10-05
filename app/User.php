@@ -221,13 +221,13 @@ class User extends Model
 
         $messages = [
             'name.required' => 'ユーザー名を入力してください',
-            'name.max' => 'ユーザー名は :max 文字までで入力して下さい',
+            'name.max' => 'ユーザー名は :max 文字以内で入力して下さい',
             'name.regex' => 'ユーザー名は半角英数字で入力して下さい',
             'name.unique' => 'そのユーザー名は既に使われています。別のユーザー名を入力して下さい',
             'disp_name.required' => '表示名を入力してください',
-            'disp_name.max' => '表示名は :max 文字までで入力して下さい',
+            'disp_name.max' => '表示名は :max 文字以内で入力して下さい',
             'password.required' => 'パスワードを入力してください',
-            'password.max' => 'パスワードは :max 文字までで入力して下さい',
+            'password.max' => 'パスワードは :max 文字以内で入力して下さい',
             'confirm_password.required' => 'パスワード確認を入力してください',
             'confirm_password.max' => 'パスワード確認は :max 文字以内で入力して下さい',
             'confirm_password.same' => 'パスワード確認が一致しません',

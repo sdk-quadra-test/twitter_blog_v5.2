@@ -456,7 +456,7 @@ $ php artisan make:migration create_notice_table --create=notice
 $ php artisan migrate 
 
 ## phpinfo()でpdo driverがno value. ドライバー入れ直した(必要ないならskip)
-$ phpbrew install 5.6.19 +default +mysql
+$ phpbrew install 5.4.40 +default +mysql
 
 
 ## modelの作成
