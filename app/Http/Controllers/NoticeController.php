@@ -7,7 +7,7 @@ use App\User;
 use App\Notice;
 use Illuminate\Http\Request;
 use DB;
-use Mockery\Matcher\Not;
+//use Mockery\Matcher\Not;
 
 class NoticeController extends Controller
 {

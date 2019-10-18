@@ -40,10 +40,10 @@
                 {!! csrf_field() !!}
                 <div class="form-group">
                     {!! Form::label('name', 'ユーザー名:') !!}
-                    {!! Form::text('name', null, ['class' => 'form-control mb-2']) !!}
+                    {!! Form::text('name', null, ['class' => 'form-control mb-2','placeholder' => 'testユーザー名 : user01']) !!}
 
                     {!! Form::label('password', 'パスワード:') !!}
-                    {!! Form::password('password', ['class' => 'form-control', 'id' => 'input-pass']) !!}
+                    {!! Form::password('password', ['class' => 'form-control', 'id' => 'input-pass', 'placeholder' => 'test パス : 1111']) !!}
                     <input class="main__crd__checkbox" type="checkbox" id="disp-pass" name="disp-pass" value="">
                     <label for="disp-pass">パスワードの表示</label>
                 </div>

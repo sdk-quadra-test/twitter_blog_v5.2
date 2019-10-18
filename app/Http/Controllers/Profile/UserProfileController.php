@@ -69,5 +69,4 @@ class UserProfileController extends Controller
         return $follow_count;
     }
 
-
 }
